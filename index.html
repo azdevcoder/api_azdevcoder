@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AzDev Coder | Painel Mercado Livre</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #ffe600;
+            padding-bottom: 10px;
+        }
+        .notificacao {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .notificacao.pergunta {
+            border-left: 5px solid #00a650;
+        }
+        .notificacao.mensagem {
+            border-left: 5px solid #3483fa;
+        }
+        .tipo {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+        .pergunta .tipo { color: #00a650; }
+        .mensagem .tipo { color: #3483fa; }
+        .data {
+            color: #888;
+            font-size: 0.85em;
+            float: right;
+        }
+        .texto {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Painel de Atendimento - Mercado Livre</h1>
+    
+    <div id="lista-mensagens">
+        <p>Aguardando novas mensagens...</p>
+    </div>
+</div>
+
+<script>
+    // Seleciona o contêiner único através do seu ID
+    const containerMensagens = document.getElementById('lista-mensagens');
+
+    async function buscarMensagens() {
+        try {
+            // Chama a rota GET do nosso backend FastAPI
+            const resposta = await fetch('http://127.0.0.1:8000/api/mensagens');
+            const dados = await resposta.json();
+
+            if (dados.length > 0) {
+                containerMensagens.innerHTML = ''; // Limpa o "Aguardando..."
+
+                dados.forEach(item => {
+                    // Cria os elementos para cada notificação
+                    const div = document.createElement('div');
+                    
+                    // Adiciona as classes CSS dependendo do tipo
+                    const classeTipo = item.tipo === 'Pergunta' ? 'pergunta' : 'mensagem';
+                    div.className = `notificacao ${classeTipo}`;
+
+                    div.innerHTML = `
+                        <div>
+                            <span class="tipo">${item.tipo}</span>
+                            <span class="data">${item.data_recebimento}</span>
+                        </div>
+                        <div class="texto">${item.texto}</div>
+                    `;
+                    containerMensagens.appendChild(div);
+                });
+            }
+        } catch (erro) {
+            console.error("Erro ao buscar mensagens do backend:", erro);
+        }
+    }
+
+    // Busca as mensagens imediatamente ao carregar a página
+    buscarMensagens();
+
+    // Configura o polling para buscar novas mensagens a cada 5 segundos
+    setInterval(buscarMensagens, 5000);
+</script>
+
+</body>
+</html>
